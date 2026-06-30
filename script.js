@@ -18,10 +18,18 @@
   }
 
   /* ============================================================
+     COMING SOON HELPER — an app is "Coming Soon" only when its
+     url is exactly "#" or an empty string.
+  ============================================================ */
+  function isComingSoon(app) {
+    return app.url === '#' || app.url === '';
+  }
+
+  /* ============================================================
      CARD RENDERER
   ============================================================ */
   function createCard(app) {
-    const hasModal = appHasModalFields(app);
+    const hasModal = appHasModalFields(app) || isComingSoon(app);
 
     let el;
     if (hasModal) {
@@ -126,6 +134,7 @@ ${app.username ? `<span class="card-code">👤 Username : ${app.username}</span>
   const modalMetaGrid  = document.getElementById('modal-meta-grid');
   const modalFields    = document.getElementById('modal-fields');
   const modalDownload  = document.getElementById('modal-download');
+  const modalDownloadDefaultText = modalDownload.innerHTML;
   const modalCloseBtn  = document.getElementById('modal-close');
 
   const SVG_COPY = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
@@ -193,22 +202,55 @@ ${app.username ? `<span class="card-code">👤 Username : ${app.username}</span>
 
     // meta grid (category / version / size / developer / updated / activated)
     modalMetaGrid.innerHTML = '';
-    META_FIELDS.forEach(({ key, label }) => {
-      if (app[key] === undefined || app[key] === null || app[key] === '') return;
-      const field = document.createElement('div');
-      field.className = 'modal-field';
-      field.innerHTML = `
-        <div class="modal-field-info">
-          <span class="modal-field-label">${label}</span>
-          <span class="modal-field-value">${
+    const comingSoon = isComingSoon(app);
+    if (comingSoon) {
+      // "Coming Soon" mode — show two informational cards instead of the
+      // normal meta fields (category/version/size/developer/updated/activated).
+      const enCard = document.createElement('div');
+      enCard.className = 'modal-field';
+      enCard.style.flexDirection = 'column';
+      enCard.style.alignItems = 'flex-start';
+      enCard.style.gap = '4px';
+      enCard.innerHTML = `
+        <div class="modal-field-info" style="width:100%;">
+          <span class="modal-field-label">🇺🇸 Application Coming Soon</span>
+          <span class="modal-field-value" style="white-space:normal; line-height:1.6; display:block; margin-top:6px;">This application is currently<br>being uploaded.<br>Please check back later.<br>The latest version will be<br>available soon.</span>
+        </div>
+      `;
+      modalMetaGrid.appendChild(enCard);
+
+      const arCard = document.createElement('div');
+      arCard.className = 'modal-field';
+      arCard.style.flexDirection = 'column';
+      arCard.style.alignItems = 'flex-start';
+      arCard.style.gap = '4px';
+      arCard.style.direction = 'rtl';
+      arCard.style.textAlign = 'right';
+      arCard.innerHTML = `
+        <div class="modal-field-info" style="width:100%;">
+          <span class="modal-field-label">🇸🇦 التطبيق قيد الرفع</span>
+          <span class="modal-field-value" style="white-space:normal; line-height:1.6; display:block; margin-top:6px;">هذا التطبيق جارٍ رفعه حاليًا.<br>يرجى العودة لاحقًا.<br>سيتم توفير أحدث إصدار قريبًا.</span>
+        </div>
+      `;
+      modalMetaGrid.appendChild(arCard);
+    } else {
+      META_FIELDS.forEach(({ key, label }) => {
+        if (app[key] === undefined || app[key] === null || app[key] === '') return;
+        const field = document.createElement('div');
+        field.className = 'modal-field';
+        field.innerHTML = `
+          <div class="modal-field-info">
+            <span class="modal-field-label">${label}</span>
+            <span class="modal-field-value">${
   key === 'activated'
     ? (app[key] ? '🟢 Activated' : '🔴 Not Activated')
     : app[key]
 }</span>
-        </div>
-      `;
-      modalMetaGrid.appendChild(field);
-    });
+          </div>
+        `;
+        modalMetaGrid.appendChild(field);
+      });
+    }
 
     // copyable fields (code / username / password)
     modalFields.innerHTML = '';
@@ -263,7 +305,24 @@ ${app.username ? `<span class="card-code">👤 Username : ${app.username}</span>
     });
 
     // download button
-    modalDownload.href = app.url || '#';
+    if (comingSoon) {
+      modalDownload.href = 'javascript:void(0)';
+      modalDownload.removeAttribute('target');
+      modalDownload.setAttribute('aria-disabled', 'true');
+      modalDownload.dataset.comingSoon = 'true';
+      modalDownload.style.pointerEvents = 'none';
+      modalDownload.style.opacity = '0.55';
+      modalDownload.style.cursor = 'not-allowed';
+      modalDownload.textContent = '⏳ Coming Soon';
+    } else {
+      modalDownload.href = app.url || '#';
+      modalDownload.removeAttribute('aria-disabled');
+      delete modalDownload.dataset.comingSoon;
+      modalDownload.style.pointerEvents = '';
+      modalDownload.style.opacity = '';
+      modalDownload.style.cursor = '';
+      modalDownload.innerHTML = modalDownloadDefaultText;
+    }
 
     // show
     modalOverlay.classList.add('active');
@@ -279,6 +338,12 @@ ${app.username ? `<span class="card-code">👤 Username : ${app.username}</span>
 
   // close interactions: X button, click outside, Esc key
   modalCloseBtn.addEventListener('click', closeAppModal);
+
+  modalDownload.addEventListener('click', (e) => {
+    if (modalDownload.dataset.comingSoon === 'true') {
+      e.preventDefault();
+    }
+  });
 
   modalOverlay.addEventListener('click', (e) => {
     if (e.target === modalOverlay) closeAppModal();
