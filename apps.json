@@ -239,13 +239,19 @@
   "activated": true
 },
   {
-    "name": "🏜️ ADRAR TV",
-    "icon": "images/adrar-tv.png",
-    "color": "#1a001a",
-    "url": "#",
-    "badge": "live",
-    "bg": "linear-gradient(135deg,#1a001a,#6a006a)"
-  },
+  "name": "📺 ADRAR TV",
+  "icon": "images/adrar-tv.png",
+  "color": "#0d2240",
+  "url": "https://devuploads.com/ga2blc24z6yd",
+  "badge": "live",
+  "bg": "linear-gradient(135deg,#0d2240,#1a4a8a)",
+  "category": "Movies, TV Shows & Live TV",
+  "version": "5.9",
+  "size": "27.80 MB",
+  "developer": "ANUBIS by B.Nacereddine",
+  "updated": "01 Jul 2026",
+  "activated": true
+},
   {
     "name": "👑 AHMED TV",
     "icon": "images/ahmed-tv.png",
