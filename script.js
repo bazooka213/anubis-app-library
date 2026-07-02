@@ -552,4 +552,30 @@ ${app.username ? `<span class="card-code"${cardComingSoon ? ' style="position:re
     }
   });
 
+  /* ============================================================
+     SUPPORT BANNER — language switcher (EN ↔ AR, every 3 s)
+  ============================================================ */
+  (function () {
+    const bannerEn  = document.getElementById('banner-en');
+    const bannerAr  = document.getElementById('banner-ar');
+    const bannerBtn = document.getElementById('banner-btn-text');
+    if (!bannerEn || !bannerAr || !bannerBtn) return;
+
+    const HIDDEN = 'support-banner-slide--hidden';
+    let showingEn = true;
+
+    setInterval(function () {
+      if (showingEn) {
+        bannerEn.classList.add(HIDDEN);
+        bannerAr.classList.remove(HIDDEN);
+        bannerBtn.textContent = '❤️ ادعم المشروع';
+      } else {
+        bannerAr.classList.add(HIDDEN);
+        bannerEn.classList.remove(HIDDEN);
+        bannerBtn.textContent = '❤️ Support Project';
+      }
+      showingEn = !showingEn;
+    }, 3000);
+  })();
+
 })();
